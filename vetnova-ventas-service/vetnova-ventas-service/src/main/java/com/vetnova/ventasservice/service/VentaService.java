@@ -53,4 +53,16 @@ public class VentaService {
 
         return false;
     }
+
+    public Venta actualizarEstadoVenta(Long id, String estado) {
+    Optional<Venta> ventaExistente = ventaRepository.findById(id);
+
+    if (ventaExistente.isPresent()) {
+        Venta venta = ventaExistente.get();
+        venta.setEstado(estado);
+        return ventaRepository.save(venta);
+        }
+
+        return null;
+    }
 }

@@ -45,4 +45,9 @@ public class VentaController {
 
         return "Venta no encontrada";
     }
+
+    @PutMapping("/{id}/estado/{estado}")
+    public Venta actualizarEstadoVenta(@PathVariable Long id, @PathVariable String estado) {
+            return ventaService.actualizarEstadoVenta(id, estado);
+    }
 }
