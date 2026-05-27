@@ -36,9 +36,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtService.validarToken(token);
+            String rol = claims.get("rol", String.class);
 
             request.setAttribute("correo", claims.getSubject());
-            request.setAttribute("rol", claims.get("rol"));
+            request.setAttribute("rol", rol);
+
+            if (!("ADMIN".equals(rol) ||
+                  "RECEPCIONISTA".equals(rol) ||
+                  "CLIENTE".equals(rol))) {
+
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Acceso denegado. No tienes permisos para acceder a ventas");
+                return;
+            }
 
             filterChain.doFilter(request, response);
 
