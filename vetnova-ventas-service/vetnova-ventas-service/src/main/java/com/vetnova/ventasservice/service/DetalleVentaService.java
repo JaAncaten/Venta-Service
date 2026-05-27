@@ -4,7 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.vetnova.ventasservice.model.DetalleVenta;
 import com.vetnova.ventasservice.repository.DetalleVentaRepository;
@@ -14,6 +18,9 @@ public class DetalleVentaService {
 
     @Autowired
     private DetalleVentaRepository detalleVentaRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     public List<DetalleVenta> obtenerDetallesVenta() {
         return detalleVentaRepository.findAll();
@@ -27,11 +34,33 @@ public class DetalleVentaService {
         return detalleVentaRepository.findByVentaId(ventaId);
     }
 
-    public DetalleVenta guardarDetalleVenta(DetalleVenta detalleVenta) {
+    public DetalleVenta guardarDetalleVenta(DetalleVenta detalleVenta, String token) {
         Double subtotal = detalleVenta.getCantidad() * detalleVenta.getPrecioUnitario();
         detalleVenta.setSubtotal(subtotal);
 
-        return detalleVentaRepository.save(detalleVenta);
+        DetalleVenta detalleGuardado = detalleVentaRepository.save(detalleVenta);
+
+        descontarStockInventario(
+                detalleGuardado.getProductoId(),
+                detalleGuardado.getCantidad(),
+                token
+        );
+
+        return detalleGuardado;
+    }
+
+    private void descontarStockInventario(Long productoId, Integer cantidad, String token) {
+        String url = "http://localhost:8088/api/inventarios/producto/"
+                + productoId
+                + "/descontar/"
+                + cantidad;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
     }
 
     public DetalleVenta actualizarDetalleVenta(Long id, DetalleVenta detalleActualizado) {

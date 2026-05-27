@@ -31,9 +31,10 @@ public class DetalleVentaController {
     }
 
     @PostMapping
-    public DetalleVenta guardarDetalleVenta(@RequestBody DetalleVenta detalleVenta) {
-        return detalleVentaService.guardarDetalleVenta(detalleVenta);
-    }
+    public DetalleVenta guardarDetalleVenta(@RequestBody DetalleVenta detalleVenta,
+                                        @RequestHeader("Authorization") String token) {
+         return detalleVentaService.guardarDetalleVenta(detalleVenta, token);
+}
 
     @PutMapping("/{id}")
     public DetalleVenta actualizarDetalleVenta(@PathVariable Long id,
